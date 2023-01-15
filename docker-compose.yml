@@ -1,0 +1,36 @@
+version: '3'
+services:
+  node_app:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: node_app
+    command: npm run server
+    ports:
+      - "3000:3000"
+    networks:
+      - my-network
+
+  mysql_database:
+    image: mysql:8
+    restart: unless-stopped
+    environment:
+      MYSQL_USER: "user"
+      MYSQL_PASSWORD: "password"
+      MYSQL_DATABASE: "bienes-raices"
+      MYSQL_ROOT_PASSWORD: "root"
+      MYSQL_ALLOW_EMPTY_PASSWORD:
+      MYSQL_RANDOM_ROOT_PASSWORD:
+    volumes:
+      - bienes-raices-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - my-network
+
+networks:
+  my-network:
+    driver: bridge
+
+volumes:
+  bienes-raices-data:
