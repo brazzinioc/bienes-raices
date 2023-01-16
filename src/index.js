@@ -1,9 +1,22 @@
 //const express = require('express'); // common js
 import express from 'express'; 
 import userRoutes from './routes/userRoutes.js';
+import database from './config/database.js';
 
 // crear la app
 const app = express();
+
+// Habilita lectura de datos de formularios
+app.use(express.urlencoded({extended:true}));
+
+// conexión a la bd
+try {
+    await database.authenticate();
+    database.sync();
+    console.log('Conexión exitosa a la base de datos');
+} catch (e) {
+    console.error(e);
+}
 
 // Habilitar pug (template engine)
 app.set('view engine', 'pug');
@@ -20,3 +33,8 @@ const port = 3000;
 app.listen(port, () => {
     console.log(`El servidor está funcionando en el puerto ${port}`);
 });
+
+console.log(process.env.DB_NAME);
+console.log(process.env.DB_USERNAME);
+console.log(process.env.DB_PASSWORD);
+console.log(process.env.DB_HOSTNAME);

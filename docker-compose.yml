@@ -6,8 +6,15 @@ services:
       dockerfile: ./Dockerfile
     container_name: node_app
     command: npm run server
+    environment:
+      DB_HOSTNAME: mysql_database
+      DB_NAME: ${DB_NAME}
+      DB_USERNAME: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
     ports:
       - "3000:3000"
+    volumes:
+      - ./src/:/usr/src/node-app/src
     networks:
       - my-network
 
@@ -15,9 +22,9 @@ services:
     image: mysql:8
     restart: unless-stopped
     environment:
-      MYSQL_USER: "user"
-      MYSQL_PASSWORD: "password"
-      MYSQL_DATABASE: "bienes-raices"
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
       MYSQL_ROOT_PASSWORD: "root"
       MYSQL_ALLOW_EMPTY_PASSWORD:
       MYSQL_RANDOM_ROOT_PASSWORD:
