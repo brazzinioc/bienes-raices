@@ -1,5 +1,7 @@
 import { check, validationResult } from 'express-validator';
 import User from '../models/User.js';
+import { generateId } from '../helpers/tokens.js';
+import { registerEmail } from '../helpers/emails.js';
 
 const loginForm = (req, res) => {
     res.render('auth/login', {
@@ -49,8 +51,35 @@ const registerUser = async (req, res) => {
         });
     }
 
-    const user = await User.create({ name, email, password });
-    res.json(user);
+    // create User
+    const newUser = await User.create({
+        name,
+        email,
+        password,
+        token: generateId()
+    });
+
+    console.log(newUser);
+
+    console.log('-------------');
+    console.log(newUser.name);
+    console.log(newUser.email);
+    console.log(newUser.token);
+
+    if(newUser /*!= undefined && newUser.hasOwnProperty('name') && newUser.hasOwnProperty('email') && newUser.hasOwnProperty('token')*/) {
+        const emailSent = await registerEmail({
+            name: newUser.name,
+            email: newUser.email,
+            token: newUser.token
+        });
+        console.log("Email sent output");
+        console.log(emailSent);
+    }
+    // show message
+    return res.render('templates/message',{
+        pageTitle: 'Cuenta creada correctamente',
+        message: 'Hemos enviado un email de confirmación haga click en el enlace'
+    });
 }
 
 // export default solo uno puedes tener uno solo por archivo
