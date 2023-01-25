@@ -5,19 +5,22 @@ import { registerEmail } from '../helpers/emails.js';
 
 const loginForm = (req, res) => {
     res.render('auth/login', {
-        pageTitle: 'Iniciar Sesión'
+        pageTitle: 'Iniciar Sesión',
+        csrfToken: req.csrfToken(),
     });
 }
 
 const registerForm = (req, res) => {
     res.render('auth/register', {
-        pageTitle: 'Crear cuenta'
+        pageTitle: 'Crear cuenta',
+        csrfToken: req.csrfToken(),
     });
 }
 
 const passwordRecoveryForm = (req, res) => {
     res.render('auth/password-recovery', {
-        pageTitle: 'Recuperar contraseña'
+        pageTitle: 'Recuperar contraseña',
+        csrfToken: req.csrfToken(),
     });
 }
 
@@ -36,6 +39,7 @@ const registerUser = async (req, res) => {
     if (!result.isEmpty()){
         return res.render('auth/register', {
             pageTitle: 'Crear cuenta',
+            csrfToken: req.csrfToken(),
             data: { name, email },
             errors: result.array(),
         });
@@ -46,6 +50,7 @@ const registerUser = async (req, res) => {
     if (userAlreadyExist) {
         return res.render('auth/register', {
             pageTitle: 'Crear cuenta',
+            csrfToken: req.csrfToken(),
             data: { name, email },
             errors: [ { msg: "Correo ya encuentra en uso" }],
         });
@@ -59,22 +64,14 @@ const registerUser = async (req, res) => {
         token: generateId()
     });
 
-    console.log(newUser);
-
-    console.log('-------------');
-    console.log(newUser.name);
-    console.log(newUser.email);
-    console.log(newUser.token);
-
-    if(newUser /*!= undefined && newUser.hasOwnProperty('name') && newUser.hasOwnProperty('email') && newUser.hasOwnProperty('token')*/) {
-        const emailSent = await registerEmail({
+    if(newUser) {
+        await registerEmail({
             name: newUser.name,
             email: newUser.email,
             token: newUser.token
         });
-        console.log("Email sent output");
-        console.log(emailSent);
     }
+
     // show message
     return res.render('templates/message',{
         pageTitle: 'Cuenta creada correctamente',
@@ -82,10 +79,33 @@ const registerUser = async (req, res) => {
     });
 }
 
-// export default solo uno puedes tener uno solo por archivo
+const confirmAccount = async (req, res) => {
+    const { token } = req.params;
+    const user = await User.findOne({ where: { token }});
+
+    if(!user) {
+        return res.render('auth/confirm-account',{
+            pageTitle: 'Error al confirmar cuenta',
+            message: 'Hubo un error al confirmar tu cuenta, inténtalo nuevamente',
+            error: true
+        });
+    }
+
+    //confirm account
+    user.token = null;
+    user.confirmed = true;
+    await user.save();
+
+    res.render('auth/confirm-account',{
+        pageTitle: 'Cuenta confirmada',
+        message: 'La cuenta se confirmó correctamente'
+    });
+}
+
 export {
     loginForm,
     registerForm,
     passwordRecoveryForm,
     registerUser,
+    confirmAccount,
 }

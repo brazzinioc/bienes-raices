@@ -19,13 +19,13 @@ const registerEmail = async (data) => {
     const { email, name, token } = data;
 
     const sendMail = await transporter.sendMail({
-        from: "no-reply@domain.com",
+        from: process.env.EMAIL_FROM,
         to: email,
         subject: "Confirma tu cuenta en BienesRaices.com",
         text: "Confirma tu cuenta en BienesRaices.com",
         html: `
             <p>Hola ${name}, comprueba tu cuenta en BienesRaices.coms</p>
-            <p>Tu cuenta ya está lista, sólo debes confirmarla en el siguiente enlace: <a href="/auth/confirm_account?token=${token}">Confirmar Cuenta</a> </p>
+            <p>Tu cuenta ya está lista, sólo debes confirmarla en el siguiente enlace: <a href="${process.env.PROJECT_URL}:${process.env.PROJECT_PORT ?? 3000}/auth/confirm/${token}">Confirmar Cuenta</a> </p>
             <p>Sí tu no creaste esta cuenta, puedes ignorar este mensaje</p>
         `,
     });
